@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Copy to run.sh, fill in real values, and `chmod +x run.sh`.
+# Never commit run.sh with real secrets.
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+export SFTP_HOST="ftp.server.com"
+export SFTP_PORT="22"
+export SFTP_USER="user"
+export SFTP_PASSWORD="your_sftp_password"
+export SFTP_REMOTE_DIR="/home/user/server.com/path"
+
+# Optional: where MT5 CSVs are written locally (defaults to the Wine Documents dir)
+# export LOCAL_MT5_DIR="/home/ubuntu/.wine/drive_c/users/ubuntu/Documents"
+
+# MetaTrader5 package requires Windows Python, so run through Wine.
+# Override with PYTHON_CMD, e.g. PYTHON_CMD="python3" on Windows/native setups.
+PYTHON_CMD="${PYTHON_CMD:-wine python}"
+
+# shellcheck disable=SC2086
+exec $PYTHON_CMD mt5_ohlcv_exporter.py "$@"
