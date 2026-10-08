@@ -58,8 +58,8 @@ def init_mt5(terminal_path=None):
     """Initializes connection to the running MetaTrader 5 terminal."""
     if mt5 is None:
         raise RuntimeError(
-            "MetaTrader5 package is not available. Please run this script with Wine's "
-            "Python (e.g. 'wine python mt5_ohlcv_exporter.py') where MetaTrader5 is installed."
+            "MetaTrader5 package is not available. Please run this script with the Windows "
+            "Python installed in Wine (e.g. wine 'C:\\Python311\\python.exe' mt5_ohlcv_exporter.py)."
         )
 
     init_kwargs = {}
