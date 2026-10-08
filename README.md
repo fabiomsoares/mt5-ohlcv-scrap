@@ -83,6 +83,15 @@ export SFTP_REMOTE_DIR="/home/user/server.com/path"
 ## Usage
 See "Run the scraper" above.
 
+### Show the connected account
+```bash
+wine 'C:\Python311\python.exe' mt5_ohlcv_exporter.py --show-account
+```
+Prints the `login`, `server` and `company` of the account the running terminal is
+connected to, then exits without scraping or uploading (read-only; no login
+is performed). Use the printed `server` as the exact `match.server` value for
+future broker matching. Exits non-zero if the terminal is not connected.
+
 Symbols, timeframes (`M1, M5, M15, M30, H1, H4, Daily, Weekly, Monthly`) and the
 number of bars are set at the top of `main()`. Files are named
 `<SYMBOL><TIMEFRAME>_<YYYYmmddHHMMSS>.csv`.
