@@ -14,9 +14,14 @@ export SFTP_REMOTE_DIR="/home/user/server.com/path"
 # Optional: where MT5 CSVs are written locally (defaults to the Wine Documents dir)
 # export LOCAL_MT5_DIR="/home/ubuntu/.wine/drive_c/users/ubuntu/Documents"
 
-# MetaTrader5 package requires Windows Python, so run through Wine.
-# Override with PYTHON_CMD, e.g. PYTHON_CMD="python3" on Windows/native setups.
-PYTHON_CMD="${PYTHON_CMD:-wine python}"
+if ! command -v wine >/dev/null 2>&1; then
+    echo "ERROR: wine is not installed. Install it (sudo apt install wine) and run" >&2
+    echo "       scripts/setup_wine_python.sh once to install Windows Python." >&2
+    exit 1
+fi
 
-# shellcheck disable=SC2086
-exec $PYTHON_CMD mt5_ohlcv_exporter.py "$@"
+# MetaTrader5 is Windows-only: use the Windows Python installed inside Wine
+# (see scripts/setup_wine_python.sh). Do NOT use `wine python`.
+WINE_PYTHON_EXE="${WINE_PYTHON_EXE:-C:\\Python311\\python.exe}"
+
+exec wine "$WINE_PYTHON_EXE" mt5_ohlcv_exporter.py "$@"
