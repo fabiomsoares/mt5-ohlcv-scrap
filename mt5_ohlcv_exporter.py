@@ -5,6 +5,7 @@ Scrapes OHLCV rates from MetaTrader 5, saves them locally to Wine Documents,
 and uploads the CSV files to the designated SFTP endpoint.
 """
 
+import argparse
 import datetime
 import os
 import sys
@@ -158,7 +159,40 @@ def upload_to_sftp(local_file: Path, remote_dir: str):
         transport.close()
 
 
-def main():
+def show_account():
+    """Prints the account the terminal is connected to (read-only). Returns True on success."""
+    info = mt5.account_info()
+    if info is None:
+        print(f"No account information available; terminal not connected? Error: {mt5.last_error()}")
+        return False
+    print("Connected MT5 account:")
+    print(f"  login:   {info.login}")
+    print(f"  server:  {info.server}")
+    print(f"  company: {info.company}")
+    return True
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="MT5 OHLCV scraper and SFTP uploader")
+    parser.add_argument(
+        "--show-account",
+        action="store_true",
+        help="print the connected account (login, server, company) and exit without scraping",
+    )
+    args = parser.parse_args(argv or [])
+
+    if args.show_account:
+        try:
+            init_mt5()
+        except Exception as e:
+            print(f"Initialization error: {e}")
+            sys.exit(1)
+        try:
+            ok = show_account()
+        finally:
+            mt5.shutdown()
+        sys.exit(0 if ok else 1)
+
     # Configure symbols and timeframes as needed
     symbols = ["WIN$N", "WDO$N", "EURUSD"]
     timeframes = ["M1"]
@@ -198,4 +232,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

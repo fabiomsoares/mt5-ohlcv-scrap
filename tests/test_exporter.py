@@ -142,3 +142,41 @@ def test_main_init_failure_exits(exporter, monkeypatch):
     with pytest.raises(SystemExit) as e:
         exporter.main()
     assert e.value.code == 1
+
+
+def test_show_account_success(exporter, monkeypatch, capsys):
+    monkeypatch.setattr(exporter, "init_mt5", lambda: None)
+    exporter.mt5.account_info.return_value = mock.Mock(login=123, server="Broker-Live", company="Broker Ltd")
+    scrape, save, upload = mock.Mock(), mock.Mock(), mock.Mock()
+    monkeypatch.setattr(exporter, "scrape_ohlcv", scrape)
+    monkeypatch.setattr(exporter, "save_csv", save)
+    monkeypatch.setattr(exporter, "upload_to_sftp", upload)
+    with pytest.raises(SystemExit) as e:
+        exporter.main(["--show-account"])
+    assert e.value.code == 0
+    out = capsys.readouterr().out
+    assert "123" in out and "Broker-Live" in out and "Broker Ltd" in out
+    scrape.assert_not_called()
+    save.assert_not_called()
+    upload.assert_not_called()
+    exporter.mt5.shutdown.assert_called_once()
+
+
+def test_show_account_no_info(exporter, monkeypatch, capsys):
+    monkeypatch.setattr(exporter, "init_mt5", lambda: None)
+    exporter.mt5.account_info.return_value = None
+    with pytest.raises(SystemExit) as e:
+        exporter.main(["--show-account"])
+    assert e.value.code == 1
+    assert "No account information" in capsys.readouterr().out
+    exporter.mt5.shutdown.assert_called_once()
+
+
+def test_show_account_init_failure(exporter, monkeypatch):
+    def boom():
+        raise RuntimeError("x")
+
+    monkeypatch.setattr(exporter, "init_mt5", boom)
+    with pytest.raises(SystemExit) as e:
+        exporter.main(["--show-account"])
+    assert e.value.code == 1
